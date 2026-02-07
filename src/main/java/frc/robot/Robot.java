@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Subsystems.Vision;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -23,7 +24,11 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    for(String i : Vision.limelightNames){
+      LimelightHelpers.setLimelightNTDouble(i, "throttle_set", 500);
+    }
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -33,6 +38,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    for(String i : Vision.limelightNames){
+      LimelightHelpers.setLimelightNTDouble(i, "throttle_set", 0);
+    }
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -48,6 +56,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    for(String i : Vision.limelightNames){
+      LimelightHelpers.setLimelightNTDouble(i, "throttle_set", 0);
+    }
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

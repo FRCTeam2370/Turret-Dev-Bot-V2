@@ -18,6 +18,10 @@ import frc.robot.Lib.Utils.SwerveModuleConstants;
 /** Add your docs here. */
 public class Constants {
 
+    public static class VisionConstants{
+        public static final double stdCoefficient = 0.01;
+    }
+
     public static class TurretConstants{
         public static final int TurretRotationID = 7;
 

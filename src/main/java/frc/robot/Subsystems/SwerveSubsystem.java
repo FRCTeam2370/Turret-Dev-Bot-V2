@@ -21,6 +21,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.PathPlannerLogging;
 //import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -34,6 +35,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -148,6 +151,7 @@ public class SwerveSubsystem extends SubsystemBase {
     publisher.set(poseEstimator.getEstimatedPosition());
   }
 
+
   //This method calculates the position of the turret relative to the field 
   //It uses the position of the turret relative to the robot relative to the field
   public static Pose2d turretToField(){
@@ -222,31 +226,6 @@ public class SwerveSubsystem extends SubsystemBase {
     poseEstimator.update(getRotation2d(), getModulePositions());
   }
 
-  public static Pair<Pose2d, Double> getLimelightPose(){  
-    boolean doRejectUpdate = false;
-    Pose2d returnPose = null;
-    double returnTime = 0;
-
-    LimelightHelpers.SetRobotOrientation("limelight", poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-
-    if(mt2 != null){
-      if(Math.abs(gyro.getAngularVelocityZDevice().getValueAsDouble()) > 720){
-        doRejectUpdate = true;
-      }
-      if(mt2.tagCount == 0){
-        doRejectUpdate = true;
-      }
-      if(!doRejectUpdate){
-        poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-        returnPose = mt2.pose;
-        returnTime = mt2.timestampSeconds;
-      }
-    }
-
-    return Pair.of(returnPose, returnTime);
-  }
-
   public Pose2d getPose(){
     return odometry.getPoseMeters();//poseEstimator.getEstimatedPosition();
   }
@@ -258,10 +237,6 @@ public class SwerveSubsystem extends SubsystemBase {
       mSwerveModules[2].getState(),
       mSwerveModules[3].getState()
     );
-  }
-
-  public void goToPose(Pose2d pose){
-
   }
 
   public Command PathfindToPose(Supplier<Pose2d> poseSupplier){

@@ -20,6 +20,7 @@ import frc.robot.Commands.TurretCommands.PointTurretAtPoint;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
+import frc.robot.Subsystems.Vision;
 
 public class RobotContainer {
   public static final CommandXboxController driver = new CommandXboxController(0);
@@ -27,6 +28,7 @@ public class RobotContainer {
   private final SwerveSubsystem mSwerve = new SwerveSubsystem();
   private final IntakeSubsystem mIntakeSubsystem = new IntakeSubsystem();
   private final TurretSubsystem mTurretSubsystem = new TurretSubsystem();
+  private final Vision mVision = new Vision();
 
   private final SendableChooser<Command> autoChooser;
 
