@@ -169,10 +169,10 @@ public class SwerveSubsystem extends SubsystemBase {
     //TODO: fix the weird behavior with handling the other side of the circle!!! it happens with negatives and when you add the offset like below forcing only positive
     Pose2d turretpose = turretToField();
     double thetaWorldToTarget = Math.atan2((turretpose.getY() - pose.getY()), (turretpose.getX() - pose.getX()));
-    double thetaTurretToTarget = thetaWorldToTarget //+ Math.PI// adding pi here is an offset
+    double thetaTurretToTarget = thetaWorldToTarget + Math.PI// adding pi here is an offset
      - getRotation2d().getRadians() //subtracting the robot's rotation
      - (Math.toRadians(gyro.getAngularVelocityZWorld().getValueAsDouble()) * 0.02);//adding angular velocity lookahead
-    thetaTurretToTarget = thetaTurretToTarget % Math.PI + Math.PI;//Returns the thetaTurretToTarget value in the range of 0-360 degrees
+    //thetaTurretToTarget = thetaTurretToTarget % Math.PI + Math.PI;//Returns the thetaTurretToTarget value in the range of 0-360 degrees
 
     return Rotation2d.fromRadians(thetaTurretToTarget);
   }

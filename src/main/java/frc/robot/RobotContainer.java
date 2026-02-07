@@ -62,6 +62,8 @@ public class RobotContainer {
     driver.leftBumper().whileTrue(new RunIntakeForPercentSpeed(-20, mIntakeSubsystem));
 
     driver.b().toggleOnTrue(new PointTurretAtPoint(FieldConstants.HubFieldPose, mTurretSubsystem));
+    driver.y().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose1, mTurretSubsystem));
+    driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem));
   }
 
   public Command getAutonomousCommand() {

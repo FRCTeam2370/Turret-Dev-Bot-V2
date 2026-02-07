@@ -29,11 +29,15 @@ public class Constants {
 
         public static final Transform2d RobotToTurret = new Transform2d(0.2286, 0, Rotation2d.fromDegrees(0));
 
-        public static final Rotation2d TurretStartOffset = Rotation2d.fromDegrees(180);
+        public static final Rotation2d TurretStartOffset = Rotation2d.fromDegrees(0);//
     }
 
     public static class FieldConstants {
         public static final Pose2d HubFieldPose = new Pose2d(0,0, new Rotation2d());  
+        public static final Pose2d AimPose1 = new Pose2d(1, 1, new Rotation2d());
+        public static final Pose2d AimPose2 = new Pose2d(1, 2, new Rotation2d());
+        public static final Pose2d AimPose3 = new Pose2d(4, 0, new Rotation2d());
+
     }
 
     public static class SwerveConstants {
