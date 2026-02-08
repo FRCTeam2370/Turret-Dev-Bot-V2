@@ -29,7 +29,8 @@ public class Constants {
 
         public static final Transform2d RobotToTurret = new Transform2d(0.2286, 0, Rotation2d.fromDegrees(0));
 
-        public static final Rotation2d TurretStartOffset = Rotation2d.fromDegrees(0);//
+        public static final Rotation2d TurretStartOffset = Rotation2d.fromDegrees(270);//relative to the cable chain (counterclockwise positive)
+        public static final Rotation2d TurretCableChainPoint = Rotation2d.fromDegrees(90);//Relative to the front of the robot (clockwise positive)
     }
 
     public static class FieldConstants {
