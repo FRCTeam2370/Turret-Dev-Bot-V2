@@ -47,7 +47,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   private static void configTurret(){
     turretRotationMotor.setNeutralMode(NeutralModeValue.Coast);
-    turretRotationMotor.setPosition(0);
+    turretRotationMotor.setPosition(turretRotationsToKraken(TurretConstants.TurretStartOffset.getRotations()));
 
     turretRotConfig.Slot0.kP = 0.4;
     turretRotConfig.Slot0.kI = 0.0;

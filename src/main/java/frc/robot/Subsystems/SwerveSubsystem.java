@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystems;
 
+import static edu.wpi.first.units.Units.Rotation;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -131,6 +133,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // SmartDashboard.putNumber("drive Voltage", mSwerveModules[0].getWheelVoltage());
 
     SmartDashboard.putNumber("Gyro Val", getRotation2d().getDegrees());
+    SmartDashboard.putNumber("gyro 0-360 val", getgyro0to360().getDegrees());
     // SmartDashboard.putNumber("Heading", getHeading());
     // SmartDashboard.putNumber("pose x", poseEstimator.getEstimatedPosition().getX());
     // SmartDashboard.putNumber("pose y", poseEstimator.getEstimatedPosition().getY());
@@ -169,10 +172,10 @@ public class SwerveSubsystem extends SubsystemBase {
     //TODO: fix the weird behavior with handling the other side of the circle!!! it happens with negatives and when you add the offset like below forcing only positive
     Pose2d turretpose = turretToField();
     double thetaWorldToTarget = Math.atan2((turretpose.getY() - pose.getY()), (turretpose.getX() - pose.getX()));
-    double thetaTurretToTarget = thetaWorldToTarget + Math.PI// adding pi here is an offset
-     - getRotation2d().getRadians() //subtracting the robot's rotation
+    double thetaTurretToTarget = thetaWorldToTarget //+ Math.PI// adding pi here is an offset
+     - getgyro0to360().getRadians(); //subtracting the robot's rotation
      - (Math.toRadians(gyro.getAngularVelocityZWorld().getValueAsDouble()) * 0.02);//adding angular velocity lookahead
-    //thetaTurretToTarget = thetaTurretToTarget % Math.PI + Math.PI;//Returns the thetaTurretToTarget value in the range of 0-360 degrees
+    thetaTurretToTarget = ((thetaTurretToTarget % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI);//Returns the thetaTurretToTarget value in the range of 0-360 degrees
 
     return Rotation2d.fromRadians(thetaTurretToTarget);
   }
@@ -189,6 +192,10 @@ public class SwerveSubsystem extends SubsystemBase {
     mSwerveModules[1].setDesiredState(swerveModuleStates[1], isOpenLoop);
     mSwerveModules[2].setDesiredState(swerveModuleStates[2], isOpenLoop);
     mSwerveModules[3].setDesiredState(swerveModuleStates[3], isOpenLoop);
+  }
+
+  public static Rotation2d getgyro0to360(){
+    return Rotation2d.fromDegrees(((getRotation2d().getDegrees() % 360)+360)%360);
   }
 
   public SwerveModulePosition[] getModulePositions(){
