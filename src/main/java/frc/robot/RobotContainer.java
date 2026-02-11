@@ -18,6 +18,7 @@ import frc.robot.Commands.TeleopSwerve;
 import frc.robot.Commands.IntakeCommands.RunIntakeForPercentSpeed;
 import frc.robot.Commands.TurretCommands.PointTurretAtPoint;
 import frc.robot.Subsystems.IntakeSubsystem;
+import frc.robot.Subsystems.ObjectDetection;
 import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 import frc.robot.Subsystems.Vision;
@@ -29,6 +30,7 @@ public class RobotContainer {
   private final IntakeSubsystem mIntakeSubsystem = new IntakeSubsystem();
   private final TurretSubsystem mTurretSubsystem = new TurretSubsystem();
   private final Vision mVision = new Vision();
+  private final ObjectDetection mObjectDetection = new ObjectDetection();
 
   private final SendableChooser<Command> autoChooser;
 

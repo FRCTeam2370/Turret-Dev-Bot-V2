@@ -71,8 +71,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public static Optional<Alliance> color;
 
-  private static Pose2d limelightPose, limelight2Pose;
-
   private static Transform2d RobotToTurret = TurretConstants.RobotToTurret;
   private static FieldObject2d turret = field.getObject("Turret");
   private static FieldObject2d HubFieldPose = field.getObject("HubPose");
@@ -98,7 +96,9 @@ public class SwerveSubsystem extends SubsystemBase {
       new SwerveModule(3, Constants.BRConstants.BRConstants)
     };
 
-    LimelightHelpers.setPipelineIndex("limelight", 0);
+    //tells the limelights to use the apriltag pipeline
+    LimelightHelpers.setPipelineIndex("limelight-left", 0);
+    LimelightHelpers.setPipelineIndex("limelight-right", 0);
 
     odometry = new SwerveDriveOdometry(Constants.SwerveConstants.kinematics, getRotation2d(), getModulePositions());
     poseEstimator = new SwerveDrivePoseEstimator(Constants.SwerveConstants.kinematics, getRotation2d(), getModulePositions(), new Pose2d(getPose().getTranslation(), getRotation2d()));
@@ -133,7 +133,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // SmartDashboard.putNumber("drive Voltage", mSwerveModules[0].getWheelVoltage());
 
     SmartDashboard.putNumber("Gyro Val", getRotation2d().getDegrees());
-    SmartDashboard.putNumber("gyro 0-360 val", getgyro0to360().getDegrees());
+    SmartDashboard.putNumber("gyro 0-360 val", getgyro0to360(0).getDegrees());
     // SmartDashboard.putNumber("Heading", getHeading());
     // SmartDashboard.putNumber("pose x", poseEstimator.getEstimatedPosition().getX());
     // SmartDashboard.putNumber("pose y", poseEstimator.getEstimatedPosition().getY());
@@ -149,7 +149,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     field.setRobotPose(poseEstimator.getEstimatedPosition());
     turret.setPose(new Pose2d(turretToField().getTranslation(), turretRotationToPose(HubPose)));
-    HubFieldPose.setPose(HubPose);   
+    HubFieldPose.setPose(HubPose);
 
     publisher.set(poseEstimator.getEstimatedPosition());
   }
@@ -173,7 +173,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Pose2d turretpose = turretToField();
     double thetaWorldToTarget = Math.atan2((turretpose.getY() - pose.getY()), (turretpose.getX() - pose.getX()));
     double thetaTurretToTarget = thetaWorldToTarget + Math.PI + TurretConstants.TurretCableChainPoint.getRadians()// adding pi here is an offset
-     - getgyro0to360().getRadians() //subtracting the robot's rotation
+     - getgyro0to360(0).getRadians() //subtracting the robot's rotation
      - (Math.toRadians(gyro.getAngularVelocityZWorld().getValueAsDouble()) * 0.02);//adding angular velocity lookahead
     thetaTurretToTarget = ((thetaTurretToTarget % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI);//Returns the thetaTurretToTarget value in the range of 0-360 degrees
 
@@ -194,8 +194,8 @@ public class SwerveSubsystem extends SubsystemBase {
     mSwerveModules[3].setDesiredState(swerveModuleStates[3], isOpenLoop);
   }
 
-  public static Rotation2d getgyro0to360(){
-    return Rotation2d.fromDegrees(((getRotation2d().getDegrees() % 360)+360)%360);
+  public static Rotation2d getgyro0to360(double offset){
+    return Rotation2d.fromDegrees((((getRotation2d().getDegrees() + offset) % 360)+360)%360);
   }
 
   public SwerveModulePosition[] getModulePositions(){

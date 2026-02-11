@@ -20,6 +20,8 @@ public class Constants {
 
     public static class VisionConstants{
         public static final double stdCoefficient = 0.01;
+
+        public static final Pose2d objectDetectionRobotToCamera = new Pose2d(0.3175, 0.254, Rotation2d.fromDegrees(180));//12.5, 10, 180 degrees
     }
 
     public static class TurretConstants{
