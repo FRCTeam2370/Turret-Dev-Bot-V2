@@ -53,6 +53,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
 import frc.robot.SwerveModule;
 
@@ -75,6 +76,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private static FieldObject2d turret = field.getObject("Turret");
   private static FieldObject2d HubFieldPose = field.getObject("HubPose");
   private static Pose2d HubPose = new Pose2d(0,0, new Rotation2d());
+  private static FieldObject2d detectorCam = field.getObject("Detection Cam");
 
   private StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault()
   .getStructTopic("MyPose", Pose2d.struct).publish();
@@ -146,6 +148,7 @@ public class SwerveSubsystem extends SubsystemBase {
     field.setRobotPose(poseEstimator.getEstimatedPosition());
     turret.setPose(new Pose2d(turretToField().getTranslation(), turretRotationToPose(HubPose)));
     HubFieldPose.setPose(HubPose);
+    detectorCam.setPose(detectionCamToField());
 
     publisher.set(poseEstimator.getEstimatedPosition());
   }
@@ -161,6 +164,16 @@ public class SwerveSubsystem extends SubsystemBase {
     double yGlobal = ylocal * Math.cos(getRotation2d().getRadians()) + xlocal * Math.sin(getRotation2d().getRadians()) + poseEstimator.getEstimatedPosition().getY();
 
     return new Pose2d(xGlobal, yGlobal, poseEstimator.getEstimatedPosition().getRotation());
+  }
+
+  public static Pose2d detectionCamToField(){
+    double xlocal = VisionConstants.objectDetectionRobotToCamera.getX();
+    double ylocal = VisionConstants.objectDetectionRobotToCamera.getY();
+
+    double xGlobal = xlocal * Math.cos(getRotation2d().getRadians()) + ylocal * Math.sin(getRotation2d().getRadians()) + poseEstimator.getEstimatedPosition().getX();
+    double yGlobal = ylocal * Math.cos(getRotation2d().getRadians()) * xlocal * Math.sin(getRotation2d().getRadians()) + poseEstimator.getEstimatedPosition().getY();
+    
+    return new Pose2d(xGlobal, yGlobal, getgyro0to360(180));
   }
 
   //This method calculates the angle from the turret to the target Pose2d

@@ -17,6 +17,7 @@ import frc.robot.Commands.ResetGyro;
 import frc.robot.Commands.TeleopSwerve;
 import frc.robot.Commands.IntakeCommands.RunIntakeForPercentSpeed;
 import frc.robot.Commands.TurretCommands.PointTurretAtPoint;
+import frc.robot.Subsystems.FieldInfo;
 import frc.robot.Subsystems.IntakeSubsystem;
 import frc.robot.Subsystems.ObjectDetection;
 import frc.robot.Subsystems.SwerveSubsystem;
@@ -31,6 +32,7 @@ public class RobotContainer {
   private final TurretSubsystem mTurretSubsystem = new TurretSubsystem();
   private final Vision mVision = new Vision();
   private final ObjectDetection mObjectDetection = new ObjectDetection();
+  private final FieldInfo mFieldInfo = new FieldInfo();
 
   private final SendableChooser<Command> autoChooser;
 
@@ -66,6 +68,8 @@ public class RobotContainer {
     driver.b().toggleOnTrue(new PointTurretAtPoint(FieldConstants.HubFieldPose, mTurretSubsystem));
     driver.y().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose1, mTurretSubsystem));
     driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem));
+
+    
   }
 
   public Command getAutonomousCommand() {

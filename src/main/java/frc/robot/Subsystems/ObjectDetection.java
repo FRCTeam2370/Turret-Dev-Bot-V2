@@ -6,6 +6,8 @@ package frc.robot.Subsystems;
 
 import static edu.wpi.first.units.Units.Rotation;
 
+import java.util.ArrayList;
+
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,11 +23,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
 public class ObjectDetection extends SubsystemBase {
-  private static double ballAngle;
-  private static double ballDistance;
+  private static double[] ballAngles;
+  private static double[] ballDistances;
   private static int numFuel;
   private static boolean plotBalls = false;
   public static NetworkTable fuelCV;
+  public static ArrayList<Pose2d> ballPoses = new ArrayList<>();
   /** Creates a new ObjectDetection. */
   public ObjectDetection() {
     fuelCV = NetworkTableInstance.getDefault().getTable("fuelFRC");
@@ -34,30 +37,39 @@ public class ObjectDetection extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    handleFuelDetection();
-
-    SmartDashboard.putNumber("ball angle", ballAngle);
-    SmartDashboard.putNumber("ball distance", ballDistance);
+    if(fuelCV != null){
+      handleFuelDetection();
+    }
+    
+    SmartDashboard.putNumber("ball angle", ballAngles[0]);
+    SmartDashboard.putNumber("ball distance", ballDistances[0]);
   }
 
+  //TODO: make it so when we calculate the position of the ball we also set the rotational value of the Pose2d to be the angle from the robot to the ball(don't include the gyro)
   private static void handleFuelDetection(){
     numFuel = (int) fuelCV.getEntry("number_of_fuel").getInteger(0);
     
     if(numFuel > 0){
       plotBalls = true;
-      ballAngle = fuelCV.getEntry("yaw_radians").getDouble(0);
-      ballDistance = fuelCV.getEntry("distance").getDouble(0);
+      ballAngles = fuelCV.getEntry("yaw_radians").getDoubleArray(ballAngles);
+      ballDistances = fuelCV.getEntry("distance").getDoubleArray(ballDistances);
     }else{
       plotBalls = false;
-      ballAngle = 0;
-      ballDistance = 0;
     }
 
     if(plotBalls){
-      for(int i = 0; i < numFuel; i++){
+      for(int i = 0; i < numFuel-1; i++){
         FieldObject2d ball = SwerveSubsystem.field.getObject("ball");
-        ball.setPose(getBallPose(ballAngle, ballDistance));//change this to whatever the index is in the array of angles and distances
+        ball.setPose(getBallPose(ballAngles[i], ballDistances[i]));//gets the pose of the ball using the angel and distance at the current index
+
+        ballPoses.add(getBallPose(ballAngles[i], ballDistances[i]));//adds the pose to an array list of poses that can be later iterated through 
+        
+        for(int k = 0; k < ballPoses.size()-1; k++){//removes any ball poses that remained from balls out of frame
+          ballPoses.remove(numFuel + 1);
+        }
       }
+    }else{
+      ballPoses.removeAll(ballPoses);//gets rid of all poses when there are no balls
     }
   }
 
@@ -71,8 +83,8 @@ public class ObjectDetection extends SubsystemBase {
     Pose2d ballPoseRelativeToRobot = new Pose2d(ballPoseRelativeToCamera.getX() + VisionConstants.objectDetectionRobotToCamera.getX(), //ball pose relative to the center of the robot
           ballPoseRelativeToCamera.getY() + VisionConstants.objectDetectionRobotToCamera.getY(), new Rotation2d());
 
-    Pose2d ballPoseRelativeToField = new Pose2d(SwerveSubsystem.poseEstimator.getEstimatedPosition().getX() + ballPoseRelativeToRobot.getX(), //ball pose relative to the field
-          SwerveSubsystem.poseEstimator.getEstimatedPosition().getY() + ballPoseRelativeToRobot.getY(), new Rotation2d());
+    Pose2d ballPoseRelativeToField = new Pose2d(SwerveSubsystem.detectionCamToField().getX() + ballPoseRelativeToRobot.getX(), //ball pose relative to the field
+          SwerveSubsystem.detectionCamToField().getY() + ballPoseRelativeToRobot.getY(), new Rotation2d());
 
     return ballPoseRelativeToField;
     

@@ -54,7 +54,7 @@ public class Constants {
         public static final double mk4iDriveL2 = 6.75;
         public static final double mk4iRotate = 150/7;
 
-        public static final PathConstraints telePathConstraints = new PathConstraints(2, 2, 2 * Math.PI, 4 * Math.PI);
+        public static final PathConstraints telePathConstraints = new PathConstraints(1, 1, 2 * Math.PI, 4 * Math.PI);
         public static final double DrivekP = 0.02;
         public static final double DrivekI = 0.0;//0.1
         public static final double DrivekD = 0.00;
