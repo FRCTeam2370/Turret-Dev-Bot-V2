@@ -31,7 +31,7 @@ public class ObjectDetection extends SubsystemBase {
   public static ArrayList<Pose2d> ballPoses = new ArrayList<>();
   /** Creates a new ObjectDetection. */
   public ObjectDetection() {
-    fuelCV = NetworkTableInstance.getDefault().getTable("fuelFRC");
+    fuelCV = NetworkTableInstance.getDefault().getTable("fuelCV");
   }
 
   @Override
@@ -41,8 +41,8 @@ public class ObjectDetection extends SubsystemBase {
       handleFuelDetection();
     }
     
-    SmartDashboard.putNumber("ball angle", ballAngles[0]);
-    SmartDashboard.putNumber("ball distance", ballDistances[0]);
+    //SmartDashboard.putNumber("ball angle", ballAngles[0]);
+    //SmartDashboard.putNumber("ball distance", ballDistances[0]);
   }
 
   //TODO: make it so when we calculate the position of the ball we also set the rotational value of the Pose2d to be the angle from the robot to the ball(don't include the gyro)
@@ -58,14 +58,16 @@ public class ObjectDetection extends SubsystemBase {
     }
 
     if(plotBalls){
-      for(int i = 0; i < numFuel-1; i++){
-        FieldObject2d ball = SwerveSubsystem.field.getObject("ball");
+      for(int i = 0; i < numFuel; i++){
+        FieldObject2d ball = SwerveSubsystem.field.getObject("ball" + i);
         ball.setPose(getBallPose(ballAngles[i], ballDistances[i]));//gets the pose of the ball using the angel and distance at the current index
 
         ballPoses.add(getBallPose(ballAngles[i], ballDistances[i]));//adds the pose to an array list of poses that can be later iterated through 
         
-        for(int k = 0; k < ballPoses.size()-1; k++){//removes any ball poses that remained from balls out of frame
-          ballPoses.remove(numFuel + 1);
+        if(ballPoses.size() > numFuel){
+          for(int k = 0; k < ballPoses.size() - numFuel - 1; k++){//removes any ball poses that remained from balls out of frame
+            ballPoses.remove(numFuel + 1);
+          }
         }
       }
     }else{
@@ -73,7 +75,6 @@ public class ObjectDetection extends SubsystemBase {
     }
   }
 
-  //TODO: make a method that, like the turret position calculator, calculates the position and rotation of the camera relative to the field and use that in this method to calculate the position of the ball.
   public static Pose2d getBallPose(double ballAngle, double ballDistance){
     double xdis = Math.cos(ballAngle) * ballDistance;//gets the ball's x distance from the camera
     double ydis = Math.sin(ballAngle) * ballDistance;//gets the ball's y distance from the camera
@@ -84,10 +85,12 @@ public class ObjectDetection extends SubsystemBase {
           ballPoseRelativeToCamera.getY() + VisionConstants.objectDetectionRobotToCamera.getY(), new Rotation2d());
 
     Pose2d ballPoseRelativeToField = new Pose2d(SwerveSubsystem.detectionCamToField().getX() + ballPoseRelativeToRobot.getX(), //ball pose relative to the field
-          SwerveSubsystem.detectionCamToField().getY() + ballPoseRelativeToRobot.getY(), new Rotation2d());
+          SwerveSubsystem.detectionCamToField().getY() + ballPoseRelativeToRobot.getY(), 
+          Rotation2d.fromDegrees(SwerveSubsystem.getgyro0to360(0).getDegrees() - ballAngle));/* <-- gives the ball a rotation from the intakes pov, 
+            this is used later in the PathFindThroughBalls to find the optimal ending rotation 
+            and so throughout the path the intake will be facing the balls and not some arbitrary number*/
 
     return ballPoseRelativeToField;
-    
   }
 
 }
