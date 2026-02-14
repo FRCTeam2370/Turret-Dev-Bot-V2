@@ -37,28 +37,33 @@ public class ObjectDetection extends SubsystemBase {
     //SmartDashboard.putNumber("ball distance", ballDistances[0]);
   }
 
-  //TODO: make it so when we calculate the position of the ball we also set the rotational value of the Pose2d to be the angle from the robot to the ball(don't include the gyro)
+  //handles all detection of fuel and adds them to a list of current fuel in the frame
   private static void handleFuelDetection(){
-    numFuel = (int) fuelCV.getEntry("number_of_fuel").getInteger(0);
+    numFuel = (int) fuelCV.getEntry("number_of_fuel").getInteger(0);//gets the total number of fuel
     
+    //if there are fuel in the frame then we set plotBalls to true and start getting the important values from said balls
     if(numFuel > 0){
       plotBalls = true;
-      ballAngles = fuelCV.getEntry("yaw_radians").getDoubleArray(ballAngles);
-      ballDistances = fuelCV.getEntry("distance").getDoubleArray(ballDistances);
+      ballAngles = fuelCV.getEntry("yaw_radians").getDoubleArray(ballAngles);//gets an array of angles from the camera to each ball
+      ballDistances = fuelCV.getEntry("distance").getDoubleArray(ballDistances);//gets and array of distances from the camera to each ball
     }else{
       plotBalls = false;
     }
 
+    //if plotBalls is true then we plot the balls (who would have guessed :) )
     if(plotBalls){
+      //iterates through each index that appears both in the distances and in the angles arrays
       for(int i = 0; i < ballAngles.length && i < ballDistances.length; i++){
         ballPoses.add(getBallPose(ballAngles[i], ballDistances[i]));//adds the pose to an array list of poses that can be later iterated through 
 
+        //if there are more balls in the stored poses than in the frame we remove them
         if(ballPoses.size() > numFuel){
           for(int k = 0; k < ballPoses.size() - numFuel; k++){//removes any ball poses that remained from balls out of frame
             ballPoses.remove(numFuel);
           }
         }
 
+        //Logs all of the balls to the field2d
         for(Pose2d ballPose : ballPoses){
           FieldObject2d ball = SwerveSubsystem.field.getObject("ball" + i);
           ball.setPose(ballPose);//gets the pose of the ball using the angle and distance at the current index
@@ -69,10 +74,12 @@ public class ObjectDetection extends SubsystemBase {
     }
   }
 
+  //Uses an angle and a distance to calculate the position of a detected ball relative to the field
   public static Pose2d getBallPose(double ballAngle, double ballDistance){
     double xdis = Math.cos(ballAngle) * ballDistance;//gets the ball's x distance from the camera
     double ydis = Math.sin(ballAngle) * ballDistance;//gets the ball's y distance from the camera
 
+    //gets the world x and y positions of the ball from the camera using the rotation of the robot (since the camera is static we can get the gyro value and add an offset to get the camera's angle)
     double xWorldDis = Math.cos(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
     double yWorldDis = Math.sin(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
 
@@ -87,7 +94,7 @@ public class ObjectDetection extends SubsystemBase {
             this is used later in the PathFindThroughBalls to find the optimal ending rotation 
             and so throughout the path the intake will be facing the balls and not some arbitrary number*/
 
-    return ballPoseRelativeToField;
+    return ballPoseRelativeToField;//returns the ball's pose on the field
   }
 
 }

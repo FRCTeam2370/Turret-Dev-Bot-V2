@@ -4,8 +4,6 @@
 
 package frc.robot.Subsystems;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -23,9 +21,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.PathPlannerLogging;
 //import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -37,8 +32,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -54,7 +47,6 @@ import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.LimelightHelpers;
 import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {

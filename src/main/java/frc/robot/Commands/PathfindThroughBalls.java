@@ -44,6 +44,7 @@ public class PathfindThroughBalls extends Command {
   PathPlannerPath path;
   Command followPath;
   int maxIndex = 0;
+
   /** Creates a new PathfindThroughBalls. */
   public PathfindThroughBalls(ArrayList<Pose2d> points, int numWayPoints, SwerveSubsystem mSwerve, ObjectDetection mDetection) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -55,50 +56,60 @@ public class PathfindThroughBalls extends Command {
 
     properPoints = new ArrayList<>();
     rotations = new ArrayList<>();
-    maxIndex = points.size() < numWayPoints ? points.size() : numWayPoints;
+    maxIndex = points.size() < numWayPoints ? points.size() : numWayPoints;//maxIndex is which ever number is smaller
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    //checks to make sure that there are points to pathfind through, if not it doesn't make a path
     if(points.size() > 0){
-      properPoints = BallLogic.rearangePoints(/*SwerveSubsystem.poseEstimator.getEstimatedPosition(),*/new Pose2d(SwerveSubsystem.poseEstimator.getEstimatedPosition().getTranslation(), SwerveSubsystem.getgyro0to360(180)), points, maxIndex + 1);
+      //rearanges the random assortment of ball points to an organized and effiecent order based on which ball is next closest
+      properPoints = BallLogic.rearangePoints(new Pose2d(SwerveSubsystem.poseEstimator.getEstimatedPosition().getTranslation(), SwerveSubsystem.getgyro0to360(180)), points, maxIndex + 1);
 
+      //gets the max distance of the entire path
       double maxDistance = 0;
       for(int i = 1; i < properPoints.size(); i++){
         maxDistance += PhotonUtils.getDistanceToPose(properPoints.get(i - 1), properPoints.get(i));
       }
 
+      //adds rotation targets to the path so the intake will always face the point it is driving to
       for(int i = 1; i<properPoints.size(); i++){
+        //gets the distance of the point from the start
         double distanceFromStart = PhotonUtils.getDistanceToPose(properPoints.get(0), properPoints.get(i));
+        //adds the rotation target at the percentage of the path that the ball is at
         rotations.add(new RotationTarget((distanceFromStart/maxDistance), properPoints.get(i).getRotation()));
       }
       SmartDashboard.putNumber("Size of properpoints", properPoints.size());
 
+      //creates a new list of waypoints for the path
       List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(properPoints);
 
+      //contructs a path out of the waypoints, rotations, tele path constraints, and a goal end state
       //path = new PathPlannerPath(waypoints, SwerveConstants.telePathConstraints, null, new GoalEndState(0, properPoints.get(maxIndex + 1).getRotation()));
       path = new PathPlannerPath(waypoints, rotations, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), SwerveConstants.telePathConstraints, null, new GoalEndState(0, properPoints.get(maxIndex + 1).getRotation()), false);
 
-      path.preventFlipping = true;
+      path.preventFlipping = true;//prevent flipping the path based on alliance color
 
-      SwerveSubsystem.field.getObject("path").setPoses(path.getPathPoses());
+      SwerveSubsystem.field.getObject("path").setPoses(path.getPathPoses());//log the path to the field2d
       
-      followPath = AutoBuilder.followPath(path);
+      followPath = AutoBuilder.followPath(path);//create the command to follow the path
     }
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    //checks to make sure that there is a path to run, if not it runs no path
     if(path != null){
-      CommandScheduler.getInstance().schedule(followPath);
+      CommandScheduler.getInstance().schedule(followPath);//schedules the command to follow the path
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    //cancels the path if interrupted (but it doesn't work :( )
     if(path != null){
       followPath.cancel();
     }
