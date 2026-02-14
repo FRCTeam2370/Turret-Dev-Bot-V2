@@ -4,21 +4,13 @@
 
 package frc.robot.Subsystems;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.util.ArrayList;
-
-import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableListener;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
@@ -58,16 +50,18 @@ public class ObjectDetection extends SubsystemBase {
     }
 
     if(plotBalls){
-      for(int i = 0; i < numFuel; i++){
-        FieldObject2d ball = SwerveSubsystem.field.getObject("ball" + i);
-        ball.setPose(getBallPose(ballAngles[i], ballDistances[i]));//gets the pose of the ball using the angel and distance at the current index
-
+      for(int i = 0; i < ballAngles.length && i < ballDistances.length; i++){
         ballPoses.add(getBallPose(ballAngles[i], ballDistances[i]));//adds the pose to an array list of poses that can be later iterated through 
-        
+
         if(ballPoses.size() > numFuel){
-          for(int k = 0; k < ballPoses.size() - numFuel - 1; k++){//removes any ball poses that remained from balls out of frame
-            ballPoses.remove(numFuel + 1);
+          for(int k = 0; k < ballPoses.size() - numFuel; k++){//removes any ball poses that remained from balls out of frame
+            ballPoses.remove(numFuel);
           }
+        }
+
+        for(Pose2d ballPose : ballPoses){
+          FieldObject2d ball = SwerveSubsystem.field.getObject("ball" + i);
+          ball.setPose(ballPose);//gets the pose of the ball using the angle and distance at the current index
         }
       }
     }else{
@@ -79,13 +73,16 @@ public class ObjectDetection extends SubsystemBase {
     double xdis = Math.cos(ballAngle) * ballDistance;//gets the ball's x distance from the camera
     double ydis = Math.sin(ballAngle) * ballDistance;//gets the ball's y distance from the camera
 
+    double xWorldDis = Math.cos(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle + VisionConstants.ballYawOffset) * ballDistance;
+    double yWorldDis = Math.sin(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle + VisionConstants.ballYawOffset) * ballDistance;
+
     Pose2d ballPoseRelativeToCamera = new Pose2d(xdis, ydis, new Rotation2d()); //ball pose relative to the camera
 
     Pose2d ballPoseRelativeToRobot = new Pose2d(ballPoseRelativeToCamera.getX() + VisionConstants.objectDetectionRobotToCamera.getX(), //ball pose relative to the center of the robot
           ballPoseRelativeToCamera.getY() + VisionConstants.objectDetectionRobotToCamera.getY(), new Rotation2d());
 
-    Pose2d ballPoseRelativeToField = new Pose2d(SwerveSubsystem.detectionCamToField().getX() + ballPoseRelativeToRobot.getX(), //ball pose relative to the field
-          SwerveSubsystem.detectionCamToField().getY() + ballPoseRelativeToRobot.getY(), 
+    Pose2d ballPoseRelativeToField = new Pose2d(SwerveSubsystem.detectionCamToField().getX() + xWorldDis, //ball pose relative to the field
+          SwerveSubsystem.detectionCamToField().getY() + yWorldDis, 
           Rotation2d.fromDegrees(SwerveSubsystem.getgyro0to360(0).getDegrees() - ballAngle));/* <-- gives the ball a rotation from the intakes pov, 
             this is used later in the PathFindThroughBalls to find the optimal ending rotation 
             and so throughout the path the intake will be facing the balls and not some arbitrary number*/

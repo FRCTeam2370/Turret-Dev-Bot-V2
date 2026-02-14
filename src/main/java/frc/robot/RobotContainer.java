@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Commands.FindDriveKS;
+import frc.robot.Commands.PathfindThroughBalls;
 import frc.robot.Commands.ResetGyro;
 import frc.robot.Commands.TeleopSwerve;
 import frc.robot.Commands.IntakeCommands.RunIntakeForPercentSpeed;
@@ -69,7 +70,7 @@ public class RobotContainer {
     driver.y().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose1, mTurretSubsystem));
     driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem));
 
-    
+    driver.rightTrigger().whileTrue(new PathfindThroughBalls(ObjectDetection.ballPoses, 2, mSwerve, mObjectDetection));
   }
 
   public Command getAutonomousCommand() {

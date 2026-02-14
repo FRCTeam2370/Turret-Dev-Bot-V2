@@ -4,22 +4,29 @@
 
 package frc.robot.Lib.Utils;
 
+import static edu.wpi.first.units.Units.Rotation;
+
 import java.util.ArrayList;
 
 import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 /** Add your docs here. */
 public class BallLogic {
     public static ArrayList<Pose2d> rearangePoints(Pose2d startpoint, ArrayList<Pose2d> points, int indexLimit){
-        int limit = (indexLimit > points.size()) ? indexLimit-1 : points.size()-1;
+        int limit = ((indexLimit -1) < points.size()) ? indexLimit : points.size();
         ArrayList<Pose2d> optimizedPoseList = new ArrayList<>();
-        optimizedPoseList.add(findClosestPoint(points, startpoint));
+        optimizedPoseList.add(startpoint);
+        optimizedPoseList.add(new Pose2d(findClosestPoint(points, startpoint).getTranslation(), Rotation2d.fromDegrees(PhotonUtils.getYawToPose(startpoint, findClosestPoint(points, startpoint)).getDegrees() - 180)));
         points.remove(findClosestPoint(points, startpoint));
-        for(int i = 0; i<limit; i++){
-            optimizedPoseList.add(findClosestPoint(points, points.get(i)));
-            points.remove(findClosestPoint(points, points.get(i)));
+        if(limit > 1){
+            for(int i = 0; i<limit; i++){
+                optimizedPoseList.add(new Pose2d(findClosestPoint(points, points.get(i)).getTranslation(), Rotation2d.fromDegrees(PhotonUtils.getYawToPose(startpoint, findClosestPoint(points, points.get(i))).getDegrees()-180)));//findClosestPoint(points, points.get(i)));
+                points.remove(findClosestPoint(points, points.get(i)));
+                limit = ((indexLimit -1)  > points.size()) ? indexLimit : points.size();//recalculate the limit if balls have dissapeared or moved since last check
+            }
         }
 
         return optimizedPoseList;

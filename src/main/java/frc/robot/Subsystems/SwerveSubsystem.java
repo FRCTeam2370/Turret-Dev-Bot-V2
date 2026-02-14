@@ -170,9 +170,9 @@ public class SwerveSubsystem extends SubsystemBase {
     double xlocal = VisionConstants.objectDetectionRobotToCamera.getX();
     double ylocal = VisionConstants.objectDetectionRobotToCamera.getY();
 
-    double xGlobal = xlocal * Math.cos(getRotation2d().getRadians()) + ylocal * Math.sin(getRotation2d().getRadians()) + poseEstimator.getEstimatedPosition().getX();
-    double yGlobal = ylocal * Math.cos(getRotation2d().getRadians()) * xlocal * Math.sin(getRotation2d().getRadians()) + poseEstimator.getEstimatedPosition().getY();
-    
+    double xGlobal = xlocal * Math.cos(getgyro0to360(0).getRadians()) + ylocal * Math.sin(getgyro0to360(0).getRadians()) + poseEstimator.getEstimatedPosition().getX();
+    double yGlobal = ylocal * Math.cos(getgyro0to360(0).getRadians()) + xlocal * Math.sin(getgyro0to360(0).getRadians()) + poseEstimator.getEstimatedPosition().getY();
+
     return new Pose2d(xGlobal, yGlobal, getgyro0to360(180));
   }
 

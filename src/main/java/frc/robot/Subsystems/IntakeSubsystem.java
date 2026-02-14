@@ -9,11 +9,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
   public static TalonFX intakeRollers = new TalonFX(4);
   private static TalonFXConfiguration rollersConfig = new TalonFXConfiguration();
+  private static DigitalInput hallEffect = new DigitalInput(0);
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
     configIntake();
@@ -22,6 +25,7 @@ public class IntakeSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putBoolean("hall Effect Val", hallEffect.get());
   }
 
   public static void runIntake(double speed){
