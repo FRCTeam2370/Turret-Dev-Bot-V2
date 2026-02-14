@@ -73,8 +73,8 @@ public class ObjectDetection extends SubsystemBase {
     double xdis = Math.cos(ballAngle) * ballDistance;//gets the ball's x distance from the camera
     double ydis = Math.sin(ballAngle) * ballDistance;//gets the ball's y distance from the camera
 
-    double xWorldDis = Math.cos(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle + VisionConstants.ballYawOffset) * ballDistance;
-    double yWorldDis = Math.sin(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle + VisionConstants.ballYawOffset) * ballDistance;
+    double xWorldDis = Math.cos(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
+    double yWorldDis = Math.sin(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
 
     Pose2d ballPoseRelativeToCamera = new Pose2d(xdis, ydis, new Rotation2d()); //ball pose relative to the camera
 

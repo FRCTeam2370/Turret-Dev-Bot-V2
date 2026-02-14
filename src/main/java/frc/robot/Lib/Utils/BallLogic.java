@@ -16,16 +16,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
 /** Add your docs here. */
 public class BallLogic {
     public static ArrayList<Pose2d> rearangePoints(Pose2d startpoint, ArrayList<Pose2d> points, int indexLimit){
-        int limit = ((indexLimit -1) < points.size()) ? indexLimit : points.size();
+        int limit = (points.size() < indexLimit) ? points.size() : indexLimit;
         ArrayList<Pose2d> optimizedPoseList = new ArrayList<>();
         optimizedPoseList.add(startpoint);
-        optimizedPoseList.add(new Pose2d(findClosestPoint(points, startpoint).getTranslation(), Rotation2d.fromDegrees(PhotonUtils.getYawToPose(startpoint, findClosestPoint(points, startpoint)).getDegrees() - 180)));
+        optimizedPoseList.add(new Pose2d(findClosestPoint(points, startpoint).getTranslation(), Rotation2d.fromDegrees(getRotation2dToPose(startpoint, findClosestPoint(points, startpoint)).getDegrees())));
         points.remove(findClosestPoint(points, startpoint));
-        if(limit > 1){
+        if(limit >= 1){
             for(int i = 0; i<limit; i++){
-                optimizedPoseList.add(new Pose2d(findClosestPoint(points, points.get(i)).getTranslation(), Rotation2d.fromDegrees(PhotonUtils.getYawToPose(startpoint, findClosestPoint(points, points.get(i))).getDegrees()-180)));//findClosestPoint(points, points.get(i)));
+                optimizedPoseList.add(new Pose2d(findClosestPoint(points, points.get(i)).getTranslation(), Rotation2d.fromDegrees(getRotation2dToPose(startpoint, findClosestPoint(points, points.get(i))).getDegrees())));//findClosestPoint(points, points.get(i)));
                 points.remove(findClosestPoint(points, points.get(i)));
-                limit = ((indexLimit -1)  > points.size()) ? indexLimit : points.size();//recalculate the limit if balls have dissapeared or moved since last check
+                limit = (points.size() < indexLimit) ? points.size() : indexLimit;//recalculate the limit if balls have dissapeared or moved since last check
             }
         }
 
@@ -41,5 +41,14 @@ public class BallLogic {
             }
         }
         return closestPose;
+    }
+
+    public static Rotation2d getRotation2dToPose(Pose2d startPose, Pose2d targetPose){
+        double xdis = targetPose.getX() - startPose.getX();
+        double ydis = targetPose.getY() - startPose.getY();
+
+        Rotation2d angleToPose = Rotation2d.fromRadians(Math.atan2(ydis, xdis));
+
+        return angleToPose;
     }
 }

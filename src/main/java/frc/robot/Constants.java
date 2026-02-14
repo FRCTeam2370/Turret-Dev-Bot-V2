@@ -22,8 +22,6 @@ public class Constants {
         public static final double stdCoefficient = 0.01;
 
         public static final Pose2d objectDetectionRobotToCamera = new Pose2d(-0.254, 0, Rotation2d.fromDegrees(180));//12.5, 10, 180 degrees
-
-        public static final double ballYawOffset = 0.2795169467665932;
     }
 
     public static class TurretConstants{
