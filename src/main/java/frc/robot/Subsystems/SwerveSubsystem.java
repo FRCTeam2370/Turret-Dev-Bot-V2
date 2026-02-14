@@ -33,6 +33,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.DoubleArrayTopic;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -132,6 +134,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // SmartDashboard.putNumber("Odometry x", odometry.getPoseMeters().getX());
     // SmartDashboard.putNumber("Odometry y", odometry.getPoseMeters().getY());
     SmartDashboard.putNumber("Calculated Turret Angle", turretRotationToPose(FieldConstants.HubFieldPose).getDegrees());
+    NetworkTableInstance.getDefault().getTable("fuelCV").getEntry("Camera Pose").setDoubleArray(new Double[]{detectionCamToField().getX(), detectionCamToField().getY(), getgyro0to360(180).getRadians()});
 
     updateOdometry();
     //odometry.update(getRotation2d(), getModulePositions());//USE THIS WHEN TESTING AUTOS WITHOUT FIELD LOCALIZATION

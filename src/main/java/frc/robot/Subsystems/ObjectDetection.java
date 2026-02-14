@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
@@ -15,8 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
 public class ObjectDetection extends SubsystemBase {
-  private static double[] ballAngles;
-  private static double[] ballDistances;
+  private static double[] ballAngles, ballDistances, weights, ballx, bally;
   private static int numFuel;
   private static boolean plotBalls = false;
   public static NetworkTable fuelCV;
@@ -46,6 +47,10 @@ public class ObjectDetection extends SubsystemBase {
       plotBalls = true;
       ballAngles = fuelCV.getEntry("yaw_radians").getDoubleArray(ballAngles);//gets an array of angles from the camera to each ball
       ballDistances = fuelCV.getEntry("distance").getDoubleArray(ballDistances);//gets and array of distances from the camera to each ball
+      weights = fuelCV.getEntry("weights").getDoubleArray(weights);
+      ballx = fuelCV.getEntry("ball_position_x").getDoubleArray(ballx);
+      bally = fuelCV.getEntry("ball_position_y").getDoubleArray(bally);
+      
     }else{
       plotBalls = false;
     }
@@ -54,7 +59,7 @@ public class ObjectDetection extends SubsystemBase {
     if(plotBalls){
       //iterates through each index that appears both in the distances and in the angles arrays
       for(int i = 0; i < ballAngles.length && i < ballDistances.length; i++){
-        ballPoses.add(getBallPose(ballAngles[i], ballDistances[i]));//adds the pose to an array list of poses that can be later iterated through 
+        ballPoses.add(new Pose2d(new Translation2d(ballx[i], bally[i]), new Rotation2d()));//adds the pose to an array list of poses that can be later iterated through 
 
         //if there are more balls in the stored poses than in the frame we remove them
         if(ballPoses.size() > numFuel){
@@ -76,17 +81,10 @@ public class ObjectDetection extends SubsystemBase {
 
   //Uses an angle and a distance to calculate the position of a detected ball relative to the field
   public static Pose2d getBallPose(double ballAngle, double ballDistance){
-    double xdis = Math.cos(ballAngle) * ballDistance;//gets the ball's x distance from the camera
-    double ydis = Math.sin(ballAngle) * ballDistance;//gets the ball's y distance from the camera
 
     //gets the world x and y positions of the ball from the camera using the rotation of the robot (since the camera is static we can get the gyro value and add an offset to get the camera's angle)
     double xWorldDis = Math.cos(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
     double yWorldDis = Math.sin(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
-
-    Pose2d ballPoseRelativeToCamera = new Pose2d(xdis, ydis, new Rotation2d()); //ball pose relative to the camera
-
-    Pose2d ballPoseRelativeToRobot = new Pose2d(ballPoseRelativeToCamera.getX() + VisionConstants.objectDetectionRobotToCamera.getX(), //ball pose relative to the center of the robot
-          ballPoseRelativeToCamera.getY() + VisionConstants.objectDetectionRobotToCamera.getY(), new Rotation2d());
 
     Pose2d ballPoseRelativeToField = new Pose2d(SwerveSubsystem.detectionCamToField().getX() + xWorldDis, //ball pose relative to the field
           SwerveSubsystem.detectionCamToField().getY() + yWorldDis, 
