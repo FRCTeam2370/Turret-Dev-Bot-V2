@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
@@ -33,6 +34,8 @@ public class ObjectDetection extends SubsystemBase {
     if(fuelCV != null){
       handleFuelDetection();
     }
+
+    SmartDashboard.putNumber("Ball Poses Size", ballPoses.size());
     
     //SmartDashboard.putNumber("ball angle", ballAngles[0]);
     //SmartDashboard.putNumber("ball distance", ballDistances[0]);

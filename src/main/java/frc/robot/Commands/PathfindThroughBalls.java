@@ -74,7 +74,7 @@ public class PathfindThroughBalls extends Command {
       }
 
       //adds rotation targets to the path so the intake will always face the point it is driving to
-      for(int i = 1; i<properPoints.size(); i++){
+      for(int i = 1; i < properPoints.size(); i++){
         //gets the distance of the point from the start
         double distanceFromStart = PhotonUtils.getDistanceToPose(properPoints.get(0), properPoints.get(i));
         //adds the rotation target at the percentage of the path that the ball is at
@@ -86,6 +86,8 @@ public class PathfindThroughBalls extends Command {
 
       //creates a new list of waypoints for the path
       List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(properPoints);
+
+      SmartDashboard.putNumber("size of waypoints", waypoints.size());
 
       //contructs a path out of the waypoints, rotations, tele path constraints, and a goal end state
       //path = new PathPlannerPath(waypoints, SwerveConstants.telePathConstraints, null, new GoalEndState(0, properPoints.get(maxIndex + 1).getRotation()));

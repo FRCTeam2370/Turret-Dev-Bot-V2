@@ -28,12 +28,13 @@ import frc.robot.Subsystems.Vision;
 public class RobotContainer {
   public static final CommandXboxController driver = new CommandXboxController(0);
 
-  private final SwerveSubsystem mSwerve = new SwerveSubsystem();
+  
   private final IntakeSubsystem mIntakeSubsystem = new IntakeSubsystem();
   private final TurretSubsystem mTurretSubsystem = new TurretSubsystem();
   private final Vision mVision = new Vision();
   private final ObjectDetection mObjectDetection = new ObjectDetection();
   private final FieldInfo mFieldInfo = new FieldInfo();
+  private final SwerveSubsystem mSwerve = new SwerveSubsystem(mObjectDetection);
 
   private final SendableChooser<Command> autoChooser;
 
@@ -70,7 +71,7 @@ public class RobotContainer {
     driver.y().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose1, mTurretSubsystem));
     driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem));
 
-    driver.rightTrigger().whileTrue(new PathfindThroughBalls(ObjectDetection.ballPoses, 2, mSwerve, mObjectDetection));
+    driver.rightTrigger().whileTrue(mSwerve.driveThroughBalls());
   }
 
   public Command getAutonomousCommand() {

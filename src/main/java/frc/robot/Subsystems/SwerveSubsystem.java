@@ -4,9 +4,13 @@
 
 package frc.robot.Subsystems;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import org.photonvision.PhotonUtils;
 
 // import org.json.simple.parser.ParseException;
 
@@ -17,7 +21,10 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.RotationTarget;
+import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.PathPlannerLogging;
 //import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -47,11 +54,14 @@ import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.SwerveModule;
+import frc.robot.Lib.Utils.BallLogic;
 
 public class SwerveSubsystem extends SubsystemBase {
+  private ObjectDetection mObjectDetection;
   public static Pigeon2 gyro = new Pigeon2(Constants.SwerveConstants.pigeonID);
   private static Pigeon2Configuration gyroConfig = new Pigeon2Configuration();
   public SwerveModule[] mSwerveModules;
@@ -77,7 +87,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
 
   /** Creates a new SwerveSubsystem. */
-  public SwerveSubsystem() {
+  public SwerveSubsystem(ObjectDetection mObjectDetection) {
+    this.mObjectDetection = mObjectDetection;
     color = DriverStation.getAlliance();
     SmartDashboard.putString("Alliace Color", color.toString());
 
@@ -308,4 +319,49 @@ public class SwerveSubsystem extends SubsystemBase {
     };
     return states;
   }
+
+  public DeferredCommand driveThroughBalls(){
+    //checks to make sure that there are points to pathfind through, if not it doesn't make a path
+    if(mObjectDetection.ballPoses.size() > 0){
+      //rearanges the random assortment of ball points to an organized and effiecent order based on which ball is next closest
+      ArrayList<Pose2d> properPoints = BallLogic.rearangePoints(new Pose2d(poseEstimator.getEstimatedPosition().getTranslation(), getgyro0to360(0)), mObjectDetection.ballPoses, 2);
+      ArrayList<RotationTarget> rotations = new ArrayList<>();
+
+      //gets the max distance of the entire path
+      double maxDistance = 0;
+      for(int i = 1; i < properPoints.size(); i++){
+        maxDistance += PhotonUtils.getDistanceToPose(properPoints.get(i - 1), properPoints.get(i));
+      }
+
+      //adds rotation targets to the path so the intake will always face the point it is driving to
+      for(int i = 1; i < properPoints.size(); i++){
+        //gets the distance of the point from the start
+        double distanceFromStart = PhotonUtils.getDistanceToPose(properPoints.get(0), properPoints.get(i));
+        //adds the rotation target at the percentage of the path that the ball is at
+        rotations.add(new RotationTarget(distanceFromStart/maxDistance, properPoints.get(i).getRotation()));
+        SmartDashboard.putNumber("percentage of the path that the rotation target is at", distanceFromStart/maxDistance);
+      }
+      SmartDashboard.putNumber("Size of properpoints", properPoints.size());
+
+      //creates a new list of waypoints for the path
+      List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(properPoints);
+
+      SmartDashboard.putNumber("size of waypoints", waypoints.size());
+
+      //contructs a path out of the waypoints, rotations, tele path constraints, and a goal end state
+      //path = new PathPlannerPath(waypoints, SwerveConstants.telePathConstraints, null, new GoalEndState(0, properPoints.get(maxIndex + 1).getRotation()));
+      PathPlannerPath path = new PathPlannerPath(waypoints, rotations, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), SwerveConstants.telePathConstraints, null, new GoalEndState(0, properPoints.get(properPoints.size()-1).getRotation()), false);
+
+      path.preventFlipping = true;//prevent flipping the path based on alliance color
+
+      SwerveSubsystem.field.getObject("path").setPoses(path.getPathPoses());//log the path to the field2d
+      
+      SmartDashboard.putString("Failed To follow path", "didn't follow path");
+      return new DeferredCommand(()-> AutoBuilder.followPath(path), Set.of(this, mObjectDetection));//create the command to follow the path
+    }else{
+      SmartDashboard.putString("Failed To follow path", "Failed to follow path");
+      return new DeferredCommand(()-> new Command(){}, Set.of(this, mObjectDetection));
+    }
+  }
+  
 }
