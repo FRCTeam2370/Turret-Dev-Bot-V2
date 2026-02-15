@@ -65,7 +65,7 @@ public class PathfindThroughBalls extends Command {
     //checks to make sure that there are points to pathfind through, if not it doesn't make a path
     if(points.size() > 0){
       //rearanges the random assortment of ball points to an organized and effiecent order based on which ball is next closest
-      properPoints = BallLogic.rearangePoints(new Pose2d(SwerveSubsystem.poseEstimator.getEstimatedPosition().getTranslation(), SwerveSubsystem.getgyro0to360(180)), points, maxIndex + 1);
+      properPoints = BallLogic.rearangePoints(new Pose2d(SwerveSubsystem.poseEstimator.getEstimatedPosition().getTranslation(), SwerveSubsystem.getgyro0to360(0)), points, maxIndex + 1);
 
       //gets the max distance of the entire path
       double maxDistance = 0;
@@ -78,7 +78,9 @@ public class PathfindThroughBalls extends Command {
         //gets the distance of the point from the start
         double distanceFromStart = PhotonUtils.getDistanceToPose(properPoints.get(0), properPoints.get(i));
         //adds the rotation target at the percentage of the path that the ball is at
-        rotations.add(new RotationTarget((distanceFromStart/maxDistance), properPoints.get(i).getRotation()));
+        rotations.add(new RotationTarget(i/properPoints.size(), properPoints.get(i).getRotation()));
+        //rotations.add(new RotationTarget((distanceFromStart/maxDistance), properPoints.get(i).getRotation()));
+        SmartDashboard.putNumber("percentage of the path that the rotation target is at", distanceFromStart/maxDistance);
       }
       SmartDashboard.putNumber("Size of properpoints", properPoints.size());
 

@@ -4,31 +4,34 @@
 
 package frc.robot.Lib.Utils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.Subsystems.ObjectDetection;
 
 /** Add your docs here. */
 public class BallLogic {
     public static ArrayList<Pose2d> rearangePoints(Pose2d startpoint, ArrayList<Pose2d> points, int indexLimit){
-        int limit = (points.size() < indexLimit) ? points.size() : indexLimit;//limit is whichever number is smaller
+        int limit = indexLimit;//limit is whichever number is smaller
         ArrayList<Pose2d> optimizedPoseList = new ArrayList<>();//makes a new ArrayList to store our optimized list of poses
 
         optimizedPoseList.add(startpoint);//adds the initial position of the robot to the list
 
         //adds the closest point to the start point
         optimizedPoseList.add(new Pose2d(findClosestPoint(points, startpoint).getTranslation(), Rotation2d.fromDegrees(getRotation2dToPose(startpoint, findClosestPoint(points, startpoint)).getDegrees())));
+        //optimizedPoseList.add(new Pose2d(findLowestWeight(points, ObjectDetection.weights).getTranslation(), getRotation2dToPose(startpoint, findClosestPoint(points, startpoint))));
         points.remove(findClosestPoint(points, startpoint));
 
         //if more than one ball is visible then add the rest to the optimized list
         if(limit >= 1){
             //iterates through the rest of the balls
-            for(int i = 0; i<limit; i++){
+            for(int i = 1; i<limit-1; i++){
                 //adds the next closest ball to the list
-                optimizedPoseList.add(new Pose2d(findClosestPoint(points, points.get(i)).getTranslation(), Rotation2d.fromDegrees(getRotation2dToPose(startpoint, findClosestPoint(points, points.get(i))).getDegrees())));//findClosestPoint(points, points.get(i)));
+                optimizedPoseList.add(new Pose2d(findClosestPoint(points, points.get(i)).getTranslation(), Rotation2d.fromDegrees(getRotation2dToPose(points.get(i), findClosestPoint(points, points.get(i))).getDegrees())));//findClosestPoint(points, points.get(i)));
                 points.remove(findClosestPoint(points, points.get(i)));//removes that ball from the initial list so we don't use it again
                 limit = (points.size() < indexLimit) ? points.size() : indexLimit;//recalculate the limit if balls have dissapeared or moved since last check
             }
@@ -47,6 +50,19 @@ public class BallLogic {
             }
         }
         return closestPose;
+    }
+
+    public static Pose2d findLowestWeight(ArrayList<Pose2d> points, double[] weights){
+        int lowestWeightIndex = 0;
+        double lowestWeight = Double.NEGATIVE_INFINITY;
+        for(int i = 0; i<weights.length; i++){
+            if(weights[i] > lowestWeight){
+                lowestWeight = weights[i];
+                lowestWeightIndex = i;
+            }
+        }
+
+        return points.get(lowestWeightIndex);
     }
 
     //gets the rotation from the current post to the target pose (for some reason the Photon.Utils one wasn't working quite right so I added this)

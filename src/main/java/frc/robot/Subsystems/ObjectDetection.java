@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
 public class ObjectDetection extends SubsystemBase {
-  private static double[] ballAngles, ballDistances, weights, ballx, bally;
+  public static double[] ballAngles, ballDistances, weights, ballx, bally;
   private static int numFuel;
   private static boolean plotBalls = false;
   public static NetworkTable fuelCV;
@@ -56,7 +56,7 @@ public class ObjectDetection extends SubsystemBase {
     }
 
     //if plotBalls is true then we plot the balls (who would have guessed :) )
-    if(plotBalls){
+    if(plotBalls && ballx != null && bally != null){
       //iterates through each index that appears both in the distances and in the angles arrays
       for(int i = 0; i < ballAngles.length && i < ballDistances.length; i++){
         ballPoses.add(new Pose2d(new Translation2d(ballx[i], bally[i]), new Rotation2d()));//adds the pose to an array list of poses that can be later iterated through 
