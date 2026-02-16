@@ -7,6 +7,8 @@ package frc.robot.Subsystems;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Lib.Utils.Ball;
 
 public class ObjectDetection extends SubsystemBase {
   public double[] ballAngles, ballDistances, weights, ballx, bally, sortedWeights;
@@ -25,6 +28,7 @@ public class ObjectDetection extends SubsystemBase {
   private boolean plotBalls = false;
   public NetworkTable fuelCV;
   public ArrayList<Pose2d> ballPoses = new ArrayList<>();
+  public ArrayList<Ball> balls = new ArrayList<>();
   /** Creates a new ObjectDetection. */
   public ObjectDetection() {
     fuelCV = NetworkTableInstance.getDefault().getTable("fuelCV");
@@ -38,15 +42,20 @@ public class ObjectDetection extends SubsystemBase {
     }
 
     SmartDashboard.putNumber("Ball Poses Size", ballPoses.size());
-    if(weights != null){
-      sortedWeights = weights;
-      Arrays.sort(sortedWeights);
-      SmartDashboard.putNumberArray("Sorted weights", sortedWeights);
+    if(ballx.length > 0){
+      sortBalls(ballx, bally, weights);
     }
-    
     
     //SmartDashboard.putNumber("ball angle", ballAngles[0]);
     //SmartDashboard.putNumber("ball distance", ballDistances[0]);
+  }
+
+  private void sortBalls(double[] x, double[] y, double[] weights){
+    for(int i = 0; i<x.length; i++){
+      balls.add(i, new Ball(x[i], y[i], weights[i]));
+    }
+    Comparator<Ball> ballComparator = Comparator.comparing(Ball::getWeight);
+    Collections.sort(balls, ballComparator);
   }
 
   //handles all detection of fuel and adds them to a list of current fuel in the frame

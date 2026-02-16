@@ -374,9 +374,9 @@ public class SwerveSubsystem extends SubsystemBase {
     ArrayList<Pose2d> poses = new ArrayList<>();
     poses.add(SwerveSubsystem.poseEstimator.getEstimatedPosition());
     
-    if(mObjectDetection.ballx.length>0 && mObjectDetection.bally.length > 0){
-      for(int i = 0; i< mObjectDetection.ballx.length; i++){
-        poses.add(new Pose2d(mObjectDetection.ballx[mObjectDetection.ballx.length - 1 -i], mObjectDetection.bally[mObjectDetection.bally.length - 1 -i], new Rotation2d()));
+    if(mObjectDetection.balls.size() > 0){
+      for(int i = 0; i< mObjectDetection.balls.size(); i++){
+        poses.add(new Pose2d(mObjectDetection.balls.get(mObjectDetection.balls.size()-1-i).x, mObjectDetection.balls.get(mObjectDetection.balls.size() -1-i).y, new Rotation2d()));
       }
 
       // for(int i = 1; i < poses.size(); i++){
