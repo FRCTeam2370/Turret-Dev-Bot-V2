@@ -4,7 +4,9 @@
 
 package frc.robot.Subsystems;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,11 +20,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
 public class ObjectDetection extends SubsystemBase {
-  public static double[] ballAngles, ballDistances, weights, ballx, bally;
-  private static int numFuel;
-  private static boolean plotBalls = false;
-  public static NetworkTable fuelCV;
-  public static ArrayList<Pose2d> ballPoses = new ArrayList<>();
+  public double[] ballAngles, ballDistances, weights, ballx, bally, sortedWeights;
+  private int numFuel;
+  private boolean plotBalls = false;
+  public NetworkTable fuelCV;
+  public ArrayList<Pose2d> ballPoses = new ArrayList<>();
   /** Creates a new ObjectDetection. */
   public ObjectDetection() {
     fuelCV = NetworkTableInstance.getDefault().getTable("fuelCV");
@@ -36,13 +38,19 @@ public class ObjectDetection extends SubsystemBase {
     }
 
     SmartDashboard.putNumber("Ball Poses Size", ballPoses.size());
+    if(weights != null){
+      sortedWeights = weights;
+      Arrays.sort(sortedWeights);
+      SmartDashboard.putNumberArray("Sorted weights", sortedWeights);
+    }
+    
     
     //SmartDashboard.putNumber("ball angle", ballAngles[0]);
     //SmartDashboard.putNumber("ball distance", ballDistances[0]);
   }
 
   //handles all detection of fuel and adds them to a list of current fuel in the frame
-  private static void handleFuelDetection(){
+  private void handleFuelDetection(){
     numFuel = (int) fuelCV.getEntry("number_of_fuel").getInteger(0);//gets the total number of fuel
     
     //if there are fuel in the frame then we set plotBalls to true and start getting the important values from said balls
@@ -62,19 +70,14 @@ public class ObjectDetection extends SubsystemBase {
     if(plotBalls && ballx != null && bally != null){
       //iterates through each index that appears both in the distances and in the angles arrays
       for(int i = 0; i < ballAngles.length && i < ballDistances.length; i++){
-        ballPoses.add(new Pose2d(new Translation2d(ballx[i], bally[i]), new Rotation2d()));//adds the pose to an array list of poses that can be later iterated through 
+        //ballPoses.add(new Pose2d(new Translation2d(ballx[i], bally[i]), new Rotation2d()));//adds the pose to an array list of poses that can be later iterated through 
 
         //if there are more balls in the stored poses than in the frame we remove them
-        if(ballPoses.size() > numFuel){
-          for(int k = 0; k < ballPoses.size() - numFuel; k++){//removes any ball poses that remained from balls out of frame
-            ballPoses.remove(numFuel);
-          }
-        }
 
         //Logs all of the balls to the field2d
-        for(Pose2d ballPose : ballPoses){
-          FieldObject2d ball = SwerveSubsystem.field.getObject("ball" + i);
-          ball.setPose(ballPose);//gets the pose of the ball using the angle and distance at the current index
+        for(int k = 0; k<ballPoses.size(); k++){
+          FieldObject2d ball = SwerveSubsystem.field.getObject("ball" + k);
+          ball.setPose(new Pose2d(ballx[k], bally[k], new Rotation2d()));//gets the pose of the ball using the angle and distance at the current index
         }
       }
     }else{
@@ -83,7 +86,7 @@ public class ObjectDetection extends SubsystemBase {
   }
 
   //Uses an angle and a distance to calculate the position of a detected ball relative to the field
-  public static Pose2d getBallPose(double ballAngle, double ballDistance){
+  public Pose2d getBallPose(double ballAngle, double ballDistance){
 
     //gets the world x and y positions of the ball from the camera using the rotation of the robot (since the camera is static we can get the gyro value and add an offset to get the camera's angle)
     double xWorldDis = Math.cos(SwerveSubsystem.getgyro0to360(180).getRadians() + ballAngle) * ballDistance;
