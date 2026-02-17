@@ -11,8 +11,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Formatter.BigDecimalLayoutForm;
 import java.util.function.Supplier;
 
+import org.ejml.dense.row.misc.DeterminantFromMinor_FDRM;
 import org.photonvision.PhotonUtils;
 
 // import org.json.simple.parser.ParseException;
@@ -85,6 +87,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private static FieldObject2d HubFieldPose = field.getObject("HubPose");
   private static Pose2d HubPose = new Pose2d(0,0, new Rotation2d());
   private static FieldObject2d detectorCam = field.getObject("Detection Cam");
+  private static FieldObject2d nextClosestBall = field.getObject("next closest ball");
 
   private StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault()
   .getStructTopic("MyPose", Pose2d.struct).publish();
@@ -145,6 +148,8 @@ public class SwerveSubsystem extends SubsystemBase {
     // SmartDashboard.putNumber("pose x", poseEstimator.getEstimatedPosition().getX());
     // SmartDashboard.putNumber("pose y", poseEstimator.getEstimatedPosition().getY());
     SmartDashboard.putNumber("pose rot", poseEstimator.getEstimatedPosition().getRotation().getDegrees());
+
+    nextClosestBall.setPose(getClosestBall());
 
     // SmartDashboard.putNumber("Odometry x", odometry.getPoseMeters().getX());
     // SmartDashboard.putNumber("Odometry y", odometry.getPoseMeters().getY());
@@ -374,9 +379,9 @@ public class SwerveSubsystem extends SubsystemBase {
     ArrayList<Pose2d> poses = new ArrayList<>();
     poses.add(SwerveSubsystem.poseEstimator.getEstimatedPosition());
     
-    if(mObjectDetection.balls.size() > 0){
-      for(int i = 0; i< mObjectDetection.balls.size(); i++){
-        poses.add(new Pose2d(mObjectDetection.balls.get(mObjectDetection.balls.size()-1-i).x, mObjectDetection.balls.get(mObjectDetection.balls.size() -1-i).y, new Rotation2d()));
+    if(mObjectDetection.ballx.length > 0 && mObjectDetection.bally.length > 0){
+      for(int i = 0; i< mObjectDetection.ballx.length; i++){
+        poses.add(new Pose2d(mObjectDetection.ballx[i], mObjectDetection.bally[i], new Rotation2d()));
       }
 
       // for(int i = 1; i < poses.size(); i++){
@@ -411,6 +416,25 @@ public class SwerveSubsystem extends SubsystemBase {
     try{
       return new DeferredCommand(()-> AutoBuilder.followPath(getPath()), Set.of(this, mObjectDetection));//create the command to follow the path
     }catch(Exception e){
+      System.out.println(e);
+    }
+    return null;
+  }
+
+  public Pose2d getClosestBall(){
+    if(mObjectDetection.ballx != null && mObjectDetection.ballx.length > 0 && mObjectDetection.bally.length > 0){
+      Pose2d ballPose = new Pose2d(mObjectDetection.ballx[0], mObjectDetection.bally[0], new Rotation2d());
+      return new Pose2d(ballPose.getTranslation(), Rotation2d.fromDegrees(BallLogic.getRotation2dToPose(poseEstimator.getEstimatedPosition(), ballPose).getDegrees() + VisionConstants.intakeSideRelativeToFront.getDegrees()));
+    }else{
+      return poseEstimator.getEstimatedPosition();
+    }
+    
+  }
+
+  public DeferredCommand driveToClosestBall(Supplier<Pose2d> pose){
+    try{
+      return new DeferredCommand(()-> AutoBuilder.pathfindToPose(pose.get(), SwerveConstants.telePathConstraints), Set.of(this, mObjectDetection));
+    }catch (Exception e){
       System.out.println(e);
     }
     return null;

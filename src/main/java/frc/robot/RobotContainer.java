@@ -72,6 +72,7 @@ public class RobotContainer {
     driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem));
 
     driver.rightTrigger().whileTrue(mSwerve.driveThroughBalls());
+    driver.povUp().whileTrue(mSwerve.driveToClosestBall(()-> mSwerve.getClosestBall()));
   }
 
   public Command getAutonomousCommand() {
