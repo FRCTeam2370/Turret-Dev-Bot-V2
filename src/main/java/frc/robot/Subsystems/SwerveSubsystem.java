@@ -432,11 +432,6 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public DeferredCommand driveToClosestBall(Supplier<Pose2d> pose){
-    try{
-      return new DeferredCommand(()-> AutoBuilder.pathfindToPose(pose.get(), SwerveConstants.telePathConstraints), Set.of(this, mObjectDetection));
-    }catch (Exception e){
-      System.out.println(e);
-    }
-    return null;
+    return new DeferredCommand(()-> AutoBuilder.pathfindToPose(getClosestBall(), SwerveConstants.telePathConstraints), Set.of(this, mObjectDetection));
   }
 }
