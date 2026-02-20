@@ -43,6 +43,10 @@ public class TurretSubsystem extends SubsystemBase {
     turretRotationMotor.setControl(turretRotMagicCycle.withPosition(turretRotationsToKraken(rot)));
   }
 
+  public static Rotation2d getTurretRotation(){
+    return krakenToRotation2d(Rotation2d.fromRotations(turretRotationMotor.getPosition().getValueAsDouble()));
+  }
+
   private static void configTurret(){
     turretRotationMotor.setNeutralMode(NeutralModeValue.Coast);
     turretRotationMotor.setPosition(turretRotationsToKraken(TurretConstants.TurretStartOffset.getRotations()));

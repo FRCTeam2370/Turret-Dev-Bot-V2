@@ -40,6 +40,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -65,6 +66,7 @@ import frc.robot.Constants.TurretConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.SwerveModule;
 import frc.robot.Lib.Utils.BallLogic;
+import frc.robot.Lib.Utils.TurretLogic;
 
 public class SwerveSubsystem extends SubsystemBase {
   private ObjectDetection mObjectDetection;
@@ -72,6 +74,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private static Pigeon2Configuration gyroConfig = new Pigeon2Configuration();
   public SwerveModule[] mSwerveModules;
   public static SwerveDriveOdometry odometry;
+
+  public TurretLogic turretLogic;
 
   public static PIDController rotationPIDauto = new PIDController(0.075, 0.0, 0.01);
   public static PIDController rotationPID = new PIDController(0.5, 0, 0);
@@ -96,6 +100,7 @@ public class SwerveSubsystem extends SubsystemBase {
   /** Creates a new SwerveSubsystem. */
   public SwerveSubsystem(ObjectDetection mObjectDetection) {
     this.mObjectDetection = mObjectDetection;
+    turretLogic = new TurretLogic(this);
     color = DriverStation.getAlliance();
     SmartDashboard.putString("Alliace Color", color.toString());
 
@@ -153,7 +158,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // SmartDashboard.putNumber("Odometry x", odometry.getPoseMeters().getX());
     // SmartDashboard.putNumber("Odometry y", odometry.getPoseMeters().getY());
-    SmartDashboard.putNumber("Calculated Turret Angle", turretRotationToPose(FieldConstants.HubFieldPose).getDegrees());
+    SmartDashboard.putNumber("Calculated Turret Angle", turretRotationToPose(new Pose2d(FieldConstants.HubFieldPose.getX(), FieldConstants.HubFieldPose.getY(), new Rotation2d())).getDegrees());
     NetworkTableInstance.getDefault().getTable("fuelCV").getEntry("Camera Pose").setDoubleArray(new Double[]{detectionCamToField().getX(), detectionCamToField().getY(), getgyro0to360(180).getRadians()});
 
     updateOdometry();
@@ -195,11 +200,11 @@ public class SwerveSubsystem extends SubsystemBase {
   public static Rotation2d turretRotationToPose(Pose2d pose){
     Pose2d turretpose = turretToField();//calculates the turrets pose relative to the field
     double thetaWorldToTarget = Math.atan2((turretpose.getY() - pose.getY()), (turretpose.getX() - pose.getX()));//calculates the angle from the turret's point to the target point
-    double thetaTurretToTarget = thetaWorldToTarget + Math.PI + TurretConstants.TurretCableChainPoint.getRadians()//uses the thetaWorldToTarget and subtracts the robot's rotation to get the rotation from the turret (adding pi here is an offset)
+    double thetaTurretToTarget = thetaWorldToTarget + Math.PI - TurretConstants.TurretCableChainPoint.getRadians()//uses the thetaWorldToTarget and subtracts the robot's rotation to get the rotation from the turret (adding pi here is an offset)
      - getgyro0to360(0).getRadians() //subtracting the robot's rotation
      - (Math.toRadians(gyro.getAngularVelocityZWorld().getValueAsDouble()) * 0.02);//adding angular velocity lookahead
-    thetaTurretToTarget = ((thetaTurretToTarget % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI);//Returns the thetaTurretToTarget value in the range of 0-360 degrees
-
+    //thetaTurretToTarget = (((thetaTurretToTarget % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI));//Returns the thetaTurretToTarget value in the range of 0-360 degrees
+    
     return Rotation2d.fromRadians(thetaTurretToTarget);
   }
 
@@ -433,5 +438,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public DeferredCommand driveToClosestBall(Supplier<Pose2d> pose){
     return new DeferredCommand(()-> AutoBuilder.pathfindToPose(getClosestBall(), SwerveConstants.telePathConstraints), Set.of(this, mObjectDetection));
+  }
+
+  public Pose2d getTurretPointTowardsPose(Translation3d targetPose){
+    Translation3d aimPose = turretLogic.getAimPose(targetPose, 2);
+    return new Pose2d(aimPose.getX(), aimPose.getY(), new Rotation2d());
   }
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Lib.Utils.TurretLogic;
 import frc.robot.Commands.FindDriveKS;
 import frc.robot.Commands.PathfindThroughBalls;
 import frc.robot.Commands.ResetGyro;
@@ -67,9 +68,9 @@ public class RobotContainer {
     driver.rightBumper().toggleOnTrue(new RunIntakeForPercentSpeed(70, mIntakeSubsystem));
     driver.leftBumper().whileTrue(new RunIntakeForPercentSpeed(-20, mIntakeSubsystem));
 
-    driver.b().toggleOnTrue(new PointTurretAtPoint(FieldConstants.HubFieldPose, mTurretSubsystem));
-    driver.y().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose1, mTurretSubsystem));
-    driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem));
+    driver.b().toggleOnTrue(new PointTurretAtPoint(FieldConstants.HubFieldPose, mTurretSubsystem, mSwerve));
+    driver.y().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose1, mTurretSubsystem, mSwerve));
+    driver.x().toggleOnTrue(new PointTurretAtPoint(FieldConstants.AimPose2, mTurretSubsystem, mSwerve));
 
     driver.rightTrigger().whileTrue(mSwerve.driveThroughBalls());
     driver.povUp().whileTrue(mSwerve.driveToClosestBall(()-> mSwerve.getClosestBall()));

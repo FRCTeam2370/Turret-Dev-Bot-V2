@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import frc.robot.Lib.Utils.SwerveModuleConstants;
 
@@ -33,15 +34,21 @@ public class Constants {
 
         public static final Transform2d RobotToTurret = new Transform2d(0.2286, 0, Rotation2d.fromDegrees(0));
 
-        public static final Rotation2d TurretStartOffset = Rotation2d.fromDegrees(270);//relative to the cable chain (counterclockwise positive)
-        public static final Rotation2d TurretCableChainPoint = Rotation2d.fromDegrees(90);//Relative to the front of the robot (clockwise positive)
+        public static final Rotation2d TurretStartOffset = Rotation2d.fromDegrees(127.5);//relative to the cable chain (counterclockwise positive)
+        public static final Rotation2d TurretCableChainPoint = Rotation2d.fromDegrees(127.5);//Relative to the front of the robot (clockwise positive)
+        public static final Rotation2d TurretMin = Rotation2d.fromDegrees(37.5);
+        public static final Rotation2d TurretMax = Rotation2d.fromDegrees(412.5);
+
+        public static final double TurretVerticalOffset = 0.425;//meters
+        public static final Rotation2d TurretMaxAngle = Rotation2d.fromDegrees(65);
+        public static final Rotation2d TurretMinAngle = Rotation2d.fromDegrees(40);
     }
 
     public static class FieldConstants {
-        public static final Pose2d HubFieldPose = new Pose2d(0,0, new Rotation2d());  
-        public static final Pose2d AimPose1 = new Pose2d(1, 1, new Rotation2d());
-        public static final Pose2d AimPose2 = new Pose2d(1, 2, new Rotation2d());
-        public static final Pose2d AimPose3 = new Pose2d(4, 0, new Rotation2d());
+        public static final Translation3d HubFieldPose = new Translation3d(0,0, 0);  
+        public static final Translation3d AimPose1 = new Translation3d(1, 1, 0);
+        public static final Translation3d AimPose2 = new Translation3d(1, 2, 0);
+        public static final Translation3d AimPose3 = new Translation3d(4, 0, 0);
 
     }
 

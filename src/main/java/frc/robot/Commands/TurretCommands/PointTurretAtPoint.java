@@ -5,17 +5,22 @@
 package frc.robot.Commands.TurretCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.Subsystems.SwerveSubsystem;
 import frc.robot.Subsystems.TurretSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class PointTurretAtPoint extends Command {
-  private Pose2d pose;
+  private Translation3d pose;
+  private SwerveSubsystem mSwerve;
   /** Creates a new PointTurretAtPoint. */
-  public PointTurretAtPoint(Pose2d pose, TurretSubsystem mTurretSubsystem) {
+  public PointTurretAtPoint(Translation3d pose, TurretSubsystem mTurretSubsystem, SwerveSubsystem mSwerve) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.pose = pose;
+    this.mSwerve = mSwerve;
     addRequirements(mTurretSubsystem);
   }
 
@@ -26,7 +31,7 @@ public class PointTurretAtPoint extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    TurretSubsystem.aimTurretAtPoint(pose);
+    TurretSubsystem.aimTurretAtPoint(mSwerve.getTurretPointTowardsPose(pose));
   }
 
   // Called once the command ends or is interrupted.
