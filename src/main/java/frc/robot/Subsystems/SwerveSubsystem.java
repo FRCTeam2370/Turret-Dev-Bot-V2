@@ -200,12 +200,16 @@ public class SwerveSubsystem extends SubsystemBase {
   public static Rotation2d turretRotationToPose(Pose2d pose){
     Pose2d turretpose = turretToField();//calculates the turrets pose relative to the field
     double thetaWorldToTarget = Math.atan2((turretpose.getY() - pose.getY()), (turretpose.getX() - pose.getX()));//calculates the angle from the turret's point to the target point
-    double thetaTurretToTarget = thetaWorldToTarget + Math.PI - TurretConstants.TurretCableChainPoint.getRadians()//uses the thetaWorldToTarget and subtracts the robot's rotation to get the rotation from the turret (adding pi here is an offset)
+    double thetaTurretToTarget = thetaWorldToTarget + Math.PI + TurretConstants.TurretCableChainPoint.getRadians()//uses the thetaWorldToTarget and subtracts the robot's rotation to get the rotation from the turret (adding pi here is an offset)
      - getgyro0to360(0).getRadians() //subtracting the robot's rotation
      - (Math.toRadians(gyro.getAngularVelocityZWorld().getValueAsDouble()) * 0.02);//adding angular velocity lookahead
-    //thetaTurretToTarget = (((thetaTurretToTarget % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI));//Returns the thetaTurretToTarget value in the range of 0-360 degrees
+    thetaTurretToTarget = (((thetaTurretToTarget % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI));//Returns the thetaTurretToTarget value in the range of 0-360 degrees
     
-    return Rotation2d.fromRadians(thetaTurretToTarget);
+    double thetaTurretToTarget2 = thetaTurretToTarget + 2*Math.PI;
+
+    double returnTheta = Math.abs(TurretSubsystem.getTurretRotation().getRadians() - thetaTurretToTarget) < Math.abs(TurretSubsystem.getTurretRotation().getRadians() - thetaTurretToTarget2) ? thetaTurretToTarget : thetaTurretToTarget2;
+
+    return Rotation2d.fromRadians(returnTheta);
   }
 
   public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop){
